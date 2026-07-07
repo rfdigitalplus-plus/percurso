@@ -75,14 +75,34 @@ export default function Despesas() {
     setUploading(true)
 
     try {
-      const ext = file.name.split('.').pop()
+      let uploadFile = file
+      let ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
+
+      const isHeic =
+        file.type === 'image/heic' ||
+        file.type === 'image/heif' ||
+        ext === 'heic' ||
+        ext === 'heif'
+
+      if (isHeic) {
+        const { default: heic2any } = await import('heic2any')
+        const convertido = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 })
+        const blobConvertido = Array.isArray(convertido) ? convertido[0] : convertido
+        uploadFile = new File(
+          [blobConvertido],
+          file.name.replace(/\.\w+$/, '.jpg'),
+          { type: 'image/jpeg' }
+        )
+        ext = 'jpg'
+      }
+
       const path = `${user.id}/${crypto.randomUUID()}.${ext}`
 
       const { error: uploadError } = await supabase.storage
         .from('faturas')
-        .upload(path, file, { contentType: file.type })
+        .upload(path, uploadFile, { contentType: uploadFile.type || 'image/jpeg' })
 
-      if (uploadError) throw uploadError
+      if (uploadError) throw new Error(uploadError.message)
 
       const { data: sessionData } = await supabase.auth.getSession()
       const accessToken = sessionData?.session?.access_token
@@ -94,12 +114,14 @@ export default function Despesas() {
       })
 
       const result = await response.json()
-      if (!response.ok) throw new Error(result.error || 'Erro ao processar a fatura')
+      if (!response.ok) throw new Error(result.error || 'Erro desconhecido ao processar a fatura')
 
       await carregarDespesas()
     } catch (err) {
       console.error(err)
-      setError('Não foi possível processar a fatura. Podes sempre adicioná-la manualmente.')
+      setError(
+        `Não foi possível processar a fatura: ${err.message}. Podes sempre adicioná-la manualmente.`
+      )
     } finally {
       setUploading(false)
       e.target.value = ''
