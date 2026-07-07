@@ -12,7 +12,6 @@ export default function Settings() {
   const [apiKey, setApiKey] = useState('')
   const [ativo, setAtivo] = useState(false)
   const [message, setMessage] = useState('')
-  const [testando, setTestando] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -49,28 +48,6 @@ export default function Settings() {
 
     setSaving(false)
     setMessage(error ? 'Não foi possível guardar. Tenta novamente.' : 'Definições guardadas.')
-  }
-
-  const handleTestar = async () => {
-    setTestando(true)
-    setMessage('')
-    const { data: sessionData } = await supabase.auth.getSession()
-    const accessToken = sessionData?.session?.access_token
-
-    try {
-      const response = await fetch('/api/test-whatsapp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken })
-      })
-      const result = await response.json()
-      if (!response.ok) throw new Error(result.error || 'Erro desconhecido')
-      setMessage('Mensagem de teste enviada — verifica o teu WhatsApp.')
-    } catch (err) {
-      setMessage(`Falha no teste: ${err.message}`)
-    } finally {
-      setTestando(false)
-    }
   }
 
   if (loading) return null
@@ -168,15 +145,6 @@ export default function Settings() {
             {saving ? 'A guardar…' : 'Guardar'}
           </button>
         </form>
-
-        <button
-          className="btn-ghost"
-          style={{ marginTop: 12, width: '100%' }}
-          onClick={handleTestar}
-          disabled={testando || !whatsappNumber || !apiKey}
-        >
-          {testando ? 'A enviar…' : 'Enviar mensagem de teste'}
-        </button>
       </main>
     </div>
   )
