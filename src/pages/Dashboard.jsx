@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function Dashboard() {
@@ -14,9 +15,17 @@ export default function Dashboard() {
           </div>
           Percurso
         </div>
-        <button className="btn-ghost" onClick={signOut}>
-          Sair
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Link className="btn-ghost" to="/despesas">
+            Despesas
+          </Link>
+          <Link className="btn-ghost" to="/definicoes">
+            Definições
+          </Link>
+          <button className="btn-ghost" onClick={signOut}>
+            Sair
+          </button>
+        </div>
       </header>
 
       <main className="app-main">

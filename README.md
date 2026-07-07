@@ -74,12 +74,59 @@ supabase/schema.sql           schema completo + RLS + trigger
   ligados por um traço tracejado, usada no logótipo e cabeçalhos. Reflete a
   função real da app (calcular rotas entre pontos).
 
+## Fase 2 — Alertas WhatsApp (já incluída)
+
+Envia lembretes de registo (3+ dias sem atividade) e um resumo no dia 1 de
+cada mês, via CallMeBot. **É uma funcionalidade Premium** — só é enviada a
+utilizadores com `is_premium = true`.
+
+### Configurar
+
+1. Corre `supabase/migration_02_whatsapp.sql` no SQL Editor do Supabase
+   (depois do `schema.sql`).
+2. No Vercel, adiciona duas variáveis de ambiente novas (**sem** prefixo
+   `VITE_`, para nunca irem parar ao código do browser):
+   - `SUPABASE_SERVICE_ROLE_KEY` — em Supabase: Project Settings > API >
+     `service_role` key (secreta, nunca a partilhes nem a uses no frontend)
+   - `CRON_SECRET` — qualquer string aleatória à tua escolha; o Vercel
+     usa-a automaticamente para autenticar o próprio cron
+3. Faz redeploy. O `vercel.json` já define o cron para correr todos os dias
+   às 8h UTC (~8h/9h em Lisboa, consoante a hora de verão — o Vercel Cron
+   não ajusta sozinho ao horário de Portugal).
+4. Cada utilizador ativa os alertas em **Definições**, dentro da app: adiciona
+   o contacto do CallMeBot no WhatsApp, envia a mensagem de ativação, e cola
+   a apikey recebida.
+5. Para testares, marca o teu próprio perfil como `is_premium = true`
+   diretamente na tabela `profiles` do Supabase (o paywall real vem na Fase 4).
+
+## Fase 3 — Deteção de despesas por IA (já incluída)
+
+Upload de foto/PDF de fatura → Claude lê o documento e preenche automaticamente
+valor, data, categoria e descrição. Fica como "pendente" até confirmares —
+só conta para os totais (incluindo o resumo mensal do WhatsApp) depois disso.
+
+### Configurar
+
+1. Corre `supabase/migration_03_ia_despesas.sql` no SQL Editor do Supabase
+   (cria o bucket de storage `faturas` e as políticas de acesso).
+2. No Vercel, adiciona a variável de ambiente `ANTHROPIC_API_KEY` (sem
+   prefixo `VITE_`) — obténs a tua chave em console.anthropic.com.
+3. Redeploy.
+4. Na app, vai a **Despesas** → "Enviar fatura (foto ou PDF)". A despesa
+   aparece em "Por confirmar" com os campos preenchidos; revê e confirma
+   (ou edita/elimina) antes de contar como despesa real.
+
+### Nota de custo
+
+Cada fatura processada é uma chamada à API da Anthropic (paga por uso,
+não por assinatura). Para um número pequeno de utilizadores o custo é
+residual, mas convém teres isso em mente ao dimensionar o preço do plano
+Premium.
+
 ## Próximas fases
 
-- **Fase 2:** alertas WhatsApp (CallMeBot) para lembretes de registo e resumo mensal.
-- **Fase 3:** deteção automática de despesas por IA a partir de fotos/PDFs de faturas.
 - **Fase 4:** paywall premium, anúncios no plano grátis, empacotamento com
-  Capacitor para publicação na Play Store.
+  Capacitor para publicação na Play Store e App Store.
 
 ## Nota fiscal
 
