@@ -1,0 +1,260 @@
+/* ============================================================
+   PERCURSO — Design tokens
+   Identidade visual: percurso/rota — asfalto escuro, marcação
+   âmbar de estrada, e uma linha de rota como elemento de assinatura.
+   ============================================================ */
+
+:root {
+  /* Cor */
+  --ink: #191b1f;
+  --ink-soft: #565b66;
+  --paper: #f3f3ef;
+  --paper-raised: #ffffff;
+  --line: #e2e1da;
+  --accent: #e0982f; /* marcação de estrada (âmbar) */
+  --accent-ink: #7a5615;
+  --route: #2f6f6b; /* linha de percurso (verde-azulado) */
+  --danger: #c1443b;
+  --danger-soft: #fbeae8;
+
+  /* Tipografia */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  /* Escala */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow-card: 0 1px 2px rgba(25, 27, 31, 0.04), 0 8px 24px rgba(25, 27, 31, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.font-mono,
+.data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+button {
+  font-family: inherit;
+}
+
+a {
+  color: var(--route);
+}
+
+/* --------------------------------------------------------
+   Elemento de assinatura: linha de percurso com waypoints
+   -------------------------------------------------------- */
+.route-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 220px;
+  margin: 0 auto;
+}
+
+.route-line .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--route);
+  flex-shrink: 0;
+}
+
+.route-line .dot.end {
+  background: var(--accent);
+}
+
+.route-line .dash {
+  flex: 1;
+  height: 2px;
+  background: repeating-linear-gradient(
+    to right,
+    var(--line) 0,
+    var(--line) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+/* --------------------------------------------------------
+   Layout utilitário
+   -------------------------------------------------------- */
+.auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 32px 28px;
+}
+
+.auth-brand {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.auth-brand h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.auth-brand p {
+  margin: 6px 0 18px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+.field label {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.field input:focus {
+  outline: 2px solid var(--route);
+  outline-offset: 1px;
+  background: var(--paper-raised);
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 11px 12px;
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.error-box {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+}
+
+/* Dashboard shell */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.app-header .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.app-main {
+  flex: 1;
+  padding: 32px 24px;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.placeholder-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 28px;
+  text-align: center;
+  color: var(--ink-soft);
+}
