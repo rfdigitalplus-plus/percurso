@@ -52,6 +52,13 @@ export default async function handler(req, res) {
     })
   }
 
+  const LIMITE_BASE64_BYTES = 5 * 1024 * 1024
+  if (base64.length > LIMITE_BASE64_BYTES) {
+    return res.status(413).json({
+      error: 'O ficheiro é demasiado grande para a IA processar. Tenta uma foto mais pequena ou um PDF mais leve.'
+    })
+  }
+
   const contentBlock = isPdf
     ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } }
     : { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } }
@@ -88,9 +95,14 @@ export default async function handler(req, res) {
   if (!anthropicResponse.ok) {
     const errText = await anthropicResponse.text()
     console.error('Erro da Anthropic API:', anthropicResponse.status, errText)
-    return res.status(502).json({
-      error: `O serviço de IA devolveu um erro (${anthropicResponse.status}). Verifica a ANTHROPIC_API_KEY e o saldo da conta.`
-    })
+    let mensagem = `Erro ${anthropicResponse.status} da IA`
+    try {
+      const errJson = JSON.parse(errText)
+      if (errJson?.error?.message) mensagem = errJson.error.message
+    } catch {
+      // mantém a mensagem genérica se o corpo não for JSON
+    }
+    return res.status(502).json({ error: mensagem })
   }
 
   const anthropicData = await anthropicResponse.json()

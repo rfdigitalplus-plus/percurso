@@ -15,6 +15,46 @@ function labelCategoria(value) {
   return CATEGORIAS.find((c) => c.value === value)?.label || value
 }
 
+// Redimensiona para no máximo 1568px no lado maior (o mesmo que a Claude
+// usa internamente) para garantir que o base64 fica bem abaixo do limite
+// de 5MB da API — fotos de telemóvel excedem isso facilmente.
+async function resizeImage(blob, maxDimension = 1568, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(blob)
+    img.onload = () => {
+      let { width, height } = img
+      if (width > maxDimension || height > maxDimension) {
+        if (width > height) {
+          height = Math.round((height * maxDimension) / width)
+          width = maxDimension
+        } else {
+          width = Math.round((width * maxDimension) / height)
+          height = maxDimension
+        }
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+      canvas.toBlob(
+        (resultBlob) => {
+          URL.revokeObjectURL(url)
+          if (resultBlob) resolve(resultBlob)
+          else reject(new Error('Falha ao redimensionar a imagem'))
+        },
+        'image/jpeg',
+        quality
+      )
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('Não foi possível carregar a imagem'))
+    }
+    img.src = url
+  })
+}
+
 export default function Despesas() {
   const { user } = useAuth()
   const [despesas, setDespesas] = useState([])
@@ -83,16 +123,22 @@ export default function Despesas() {
         file.type === 'image/heif' ||
         ext === 'heic' ||
         ext === 'heif'
+      const isPdf = file.type === 'application/pdf' || ext === 'pdf'
 
       if (isHeic) {
         const { default: heic2any } = await import('heic2any')
         const convertido = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 })
-        const blobConvertido = Array.isArray(convertido) ? convertido[0] : convertido
-        uploadFile = new File(
-          [blobConvertido],
-          file.name.replace(/\.\w+$/, '.jpg'),
-          { type: 'image/jpeg' }
-        )
+        uploadFile = Array.isArray(convertido) ? convertido[0] : convertido
+        ext = 'jpg'
+      }
+
+      if (!isPdf) {
+        // Redimensiona sempre — mesmo um JPEG direto da câmara passa
+        // facilmente do limite de 5MB da API depois de convertido para base64.
+        const redimensionada = await resizeImage(uploadFile)
+        uploadFile = new File([redimensionada], file.name.replace(/\.\w+$/, '.jpg'), {
+          type: 'image/jpeg'
+        })
         ext = 'jpg'
       }
 
