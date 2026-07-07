@@ -123,10 +123,47 @@ não por assinatura). Para um número pequeno de utilizadores o custo é
 residual, mas convém teres isso em mente ao dimensionar o preço do plano
 Premium.
 
+## Fase 4a — Paywall Premium via Stripe (já incluída)
+
+O pagamento acontece **só na versão web** — a app empacotada (Capacitor) nunca
+mostra um botão de compra, só verifica o estado `is_premium`. Isto evita o
+cenário mais arriscado com as regras da Apple sobre compras dentro da app.
+
+### Configurar
+
+1. Corre `supabase/migration_04_stripe.sql` no SQL Editor do Supabase.
+2. Cria uma conta Stripe (ou usa a que já tenhas) em stripe.com.
+3. Em **Product catalog**, cria um produto "Percurso Premium" com um preço
+   recorrente (mensal). Copia o **Price ID** (começa por `price_`).
+4. No Vercel, adiciona estas variáveis de ambiente (sem prefixo `VITE_`):
+   - `STRIPE_SECRET_KEY` — Stripe: Developers > API keys > Secret key
+   - `STRIPE_PRICE_ID` — o Price ID do passo 3
+   - `STRIPE_WEBHOOK_SECRET` — vê o passo 6
+5. Redeploy.
+6. No Stripe, vai a **Developers > Webhooks > Add endpoint**:
+   - URL: `https://<o-teu-dominio-vercel>/api/stripe-webhook`
+   - Eventos a subscrever: `checkout.session.completed`,
+     `customer.subscription.updated`, `customer.subscription.deleted`
+   - Copia o **Signing secret** gerado e usa-o como `STRIPE_WEBHOOK_SECRET`
+     (passo 4), depois faz redeploy outra vez.
+7. Testa em modo de teste do Stripe primeiro (cartão de teste `4242 4242 4242 4242`)
+   antes de ativares os pagamentos reais.
+
+### Como funciona
+
+- A app tem uma página **Premium** (`/premium`). Na web, mostra "Assinar
+  Premium" que abre o Checkout do Stripe. Dentro da app nativa, mostra só uma
+  mensagem a indicar o site.
+- Quando o pagamento é confirmado, o webhook do Stripe marca `is_premium =
+  true` automaticamente no Supabase — os alertas WhatsApp e a IA passam a
+  funcionar sem precisares de tocar em nada manualmente.
+- Se a assinatura for cancelada ou falhar o pagamento, o webhook volta a pôr
+  `is_premium = false`.
+
 ## Próximas fases
 
-- **Fase 4:** paywall premium, anúncios no plano grátis, empacotamento com
-  Capacitor para publicação na Play Store e App Store.
+- **Fase 4b:** anúncios (AdMob) no plano grátis.
+- **Fase 4c:** empacotamento com Capacitor para Play Store e App Store.
 
 ## Nota fiscal
 

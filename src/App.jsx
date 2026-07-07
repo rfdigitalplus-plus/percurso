@@ -6,6 +6,7 @@ import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
 import Despesas from './pages/Despesas'
+import Premium from './pages/Premium'
 
 export default function App() {
   return (
@@ -35,6 +36,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Despesas />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/premium"
+            element={
+              <ProtectedRoute>
+                <Premium />
               </ProtectedRoute>
             }
           />

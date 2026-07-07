@@ -19,6 +19,9 @@ export default function Dashboard() {
           <Link className="btn-ghost" to="/despesas">
             Despesas
           </Link>
+          <Link className="btn-ghost" to="/premium">
+            Premium
+          </Link>
           <Link className="btn-ghost" to="/definicoes">
             Definições
           </Link>
